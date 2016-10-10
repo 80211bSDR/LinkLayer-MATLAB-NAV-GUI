@@ -7,12 +7,6 @@ global spreadFactor numPayloadBits numMpduBits numUsrpBits numMacHdrBits usrpFra
     halfSuperSamples80211b numAckBits DIFS tFreeze cMin energyThreshold intFactor ...
     txGain rxGain centerFreqTx centerFreqRx decFactor vm vcsChoice aip 
 
-%choice for data selection
-% choice: 1 for random binary data of length l, 2 for image selection
-% choice = 1;
-
-DRxInitParameters;
-
 % Designated Receiver Parameter Structure
 %prm = init_v35();
 % aip: IP Address for USRP attached to this machine as a 3-Digit uint8

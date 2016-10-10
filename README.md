@@ -164,5 +164,5 @@ At the DRx,
 ```
 
 ### Running the Two Node (1 DTx and 1 DRx) OR the Three Node (2 DTxs and 1 DRx) System with GUI
-Run the code `GUIMain.m` in MATLAB to invoke an interactive GUI (Graphical User Interface). Set the required PHY/MAC parameters as desired to conduct the over-the-air experiments. Default parameter settings are given in bubble choices and in edit text boxes. Once the parameters are set, press the `START` button to run the experiment. Press `HELP` button to open up a help document that guides in parameter selection and in running the experiments. 
+Run the code `GUIMain.m` in MATLAB to invoke an interactive GUI (Graphical User Interface). Set the required PHY/MAC parameters as desired to conduct the over-the-air experiments. Default parameter settings are given in bubble choices and in edit text boxes. Once the parameters are set, press the `START` button to run the experiment. Press `HELP` button to open up `HelpGUI.pdf`, a help document, that guides in parameter selection and in running the experiments. 
 

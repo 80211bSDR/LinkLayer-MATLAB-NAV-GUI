@@ -1,20 +1,15 @@
 function drxPHYLayerVisual()
 
-% This code is licensed under the LGPLv3 license. Please feel free to use the code in your research and development works. 
+% This code is licensed under the LGPLv3 license. Please feel free to use the code in your research and development works.
 % We would appreciate a citation to the paper below when this code is helpful in obtaining results in your future publications.
 
 % Publication for citation:
-% Ramanathan Subramanian, Benjamin Drozdenko, Eric Doyle, Rameez Ahmed, Miriam Leeser, and Kaushik Chowdhury, 
-% "High-Level System Design of IEEE 802.11b Standard-Compliant Link Layer for MATLAB-based SDR", accepted on March 3rd, 2016 
+% Ramanathan Subramanian, Benjamin Drozdenko, Eric Doyle, Rameez Ahmed, Miriam Leeser, and Kaushik Chowdhury,
+% "High-Level System Design of IEEE 802.11b Standard-Compliant Link Layer for MATLAB-based SDR", accepted on March 3rd, 2016
 % for publication in IEEE Access Journal.
 
-global vm aip addressIndex choice
-
-%choice for data selection
-% choice: 1 for random binary data of length l, 2 for image selection
-choice = 2;
-
-DRxInitParameters;
+global vm aip addressIndex dataChoice numMpduBits numMacHdrBits usrpFrameLength numSuperBits...
+    numFcsBits intFactor txGain rxGain centerFreqTx centerFreqRx decFactor
 
 % Designated Receiver Parameter Structure
 %prm = init_v35();
@@ -191,8 +186,7 @@ while (~fe)
             cni = uint16(0);
             
             %displaying image for each packet received
-            showData(choice, nib, rib);
-            
+            showData(dataChoice, nib, rib);
         end
     elseif (sm==uint8(23)) %prm.DRxStateDIFS
         sr = drx_3WaitDIFS(sr);
@@ -393,7 +387,7 @@ else
                     if (vm),
                         fprintf(1,'DATA Packet Received!');
                         fprintf(1,'\n');
-                        fprintf(1,'DATA Packet''s Frame Control Readout:');%%%%************Checking frame control at DRx
+                        fprintf(1,'DATA Packet''s Frame Control Readout:');
                         fprintf(1,'%d',dfb(i1b:(i1b+15),1));
                         fprintf(1,'\n');
                     end

@@ -63,7 +63,7 @@ for k=1:numRuns
 %     pause;
     
     global l retransmit_counter packets_sent packet_number packet_array ...
-        txGain rxGain centerFreqTx centerFreqRx numPayloadOctets 
+        txGain rxGain centerFreqTx centerFreqRx numPayloadOctets dataChoice
     
     %diary('dtxDiary.m')
     %packet counters
@@ -88,6 +88,7 @@ for k=1:numRuns
     start=clock;
     %MAC layer code gets called from within the PHY layer code
     dtxPHYLayer
+    
     stop=clock;
     %calculations
     %Ignore the first 10 packets to account possibly for 'uhd: U' errors

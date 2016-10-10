@@ -7,13 +7,8 @@ function dtxPHYLayerVisual()
 % "High-Level System Design of IEEE 802.11b Standard-Compliant Link Layer for MATLAB-based SDR", accepted on March 3rd, 2016 
 % for publication in IEEE Access Journal.
 
-global aip choice
-
-% Settings for data
-% choice: 1 for random binary data of length l, 2 for image selection
-choice = 2;
-
-DTxInitParameters;
+global aip txGain rxGain centerFreqTx centerFreqRx intFactor decFactor ...
+    numPackets vm usrpFrameLength to toa
 
 % aip: IP Address for USRP attached to this machine as a 3-Digit uint8
 %      (as of 2/19/15, valid values for N210's in Lab are 102, 103, or 202)
@@ -156,7 +151,7 @@ function [d2s,f8t,fit] = dtx_2TransmitDATA(frt,ft)
 % ft:  Flag Terminal: If true, specifies to release System objects
 
 % Setting global variables
-global usrpFrameLength numBits80211b halfSuperSamples80211b halfUsrpFrameLength numPayloadBits choice l ...
+global usrpFrameLength numBits80211b halfSuperSamples80211b halfUsrpFrameLength numPayloadBits dataChoice l ...
     numSuperFrameBits numMacHdrBits numSuperBits numFcsBits numPhyHdrBits ...
     spreadFactor packet_number aip
 
@@ -211,7 +206,7 @@ if isempty(d8s),    d8s = complex(zeros(halfSuperSamples80211b,1));  end
 if isempty(dib) || isempty(nib)
     
     % Load data
-    [dib, nib] = getData(choice, l, aip);
+    [dib, nib] = getData(dataChoice, l, aip);
     
 end
 if isempty(hcg)

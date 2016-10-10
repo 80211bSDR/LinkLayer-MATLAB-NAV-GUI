@@ -377,13 +377,20 @@ if radio1==1
     direct=strcat(currentFolder,'/DTx');
     cd(direct);
     %    direct='/home/.../80211bSDR-LinkLayer-MATLAB-1e1c15a/DTx';
-    dtxTestsuite
-    % dtxPHYLayer
+    if dataChoice==1
+        dtxTestsuite
+    else
+        dtxPHYLayerVisual
+    end
 else
     direct=strcat(currentFolder,'/DRx');
     cd(direct);
     %     direct='/home/.../80211bSDR-LinkLayer-MATLAB-1e1c15a/DRx';
-    drxTestsuite
+    if dataChoice==1
+        drxTestsuite
+    else
+        drxPHYLayerVisual
+    end
     % drxPHYLayer
 end
 % disp(direct);

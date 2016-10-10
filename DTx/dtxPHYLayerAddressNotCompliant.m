@@ -2,15 +2,15 @@ function dtxPHYLayer()
 
 global aip retransmit_counter packet_array...
     txGain rxGain centerFreqTx centerFreqRx intFactor decFactor ...
-    numPackets packet_number syncnum vm vcs_Slots usrpFrameLength...
-    to toa
-
+    numPackets packet_number syncnum vm choice vcsFlag vcs_Slots
 syncnum = 0;
 
 % Settings for data
-% DTxInitParameters;
+% choice: 1 for random binary data of length l, 2 for image selection
+choice = 1;
+DTxInitParameters;
 
-% vcsFlag = logical(false(1));
+vcsFlag = logical(false(1)); 
 vcs_Slots = 0;
 
 %set packet_array global variable
@@ -62,6 +62,10 @@ while ~fe
     if (smt==uint8(11)) %prm.DTxStateEnergyDet
         st = dtxMACLayerSlot(st,frt);
         
+        
+        %%%%%!!!!!***** hange made to accomodate RTS similar to Tx Data
+        %%%%% In addition cahnge of st = 151 made in MAC layer too
+        
     elseif (smt==uint8(15)) %prm.DTxStateTransmitRTS
         [d2s,f8t,fit] = dtx_2TransmitRTS(frt,ft);
         trx(d2s,ft,txGain,rxGain,centerFreqTx,centerFreqRx,intFactor,decFactor,swapFreqFlag);
@@ -72,6 +76,12 @@ while ~fe
             st = uint8(161); %prm.DTxStateRxCTSSearchPLCP
         end
         
+        
+        
+        
+        %%%%%!!!!!***** Change made for Rx CTS just similar to Rx ACk
+        %%%%%Reception
+        
     elseif (smt==uint8(16)) %prm.DTxStateRxCTS
         df=trx(db,ft,txGain,rxGain,centerFreqTx,centerFreqRx,intFactor,decFactor,swapFreqFlag);
         [faf,dfl,flg,nrb,rbs,st] = dtx_3ReceiveCTS(df,ft,st);
@@ -80,21 +90,37 @@ while ~fe
             cai = uint16(0); cni = uint16(0);
             syncnum = 0;
             if (vm), fprintf(1,'@%5.2f: 802.11b CTS Packet Received.\n\n',toc); end
-            st = uint8(121); %prm.DTxStateTransmitHeader
+            % Increment count of #802.11b frames succesfully transceived
+%%%%%!!!!!*****           c8f = c8f + uint8(1);
+            %             if c8f==6
+            %                 fit=true(1);
+            %              %end
+            if (fit)
+                % If ACK rx'd for last DATA frame & full image was tx'd,
+                % Change DTx State to Terminal State: no more Tx/Rx performed
+                st = uint8(140); %prm.DTxStateEOT
+                % Set exit flag
+                fe = logical(true(1));
+            else
+                st = uint8(121); %prm.DTxStateTransmitHeader
+            end
         else
+            %%%%%!!!!!***** Not incrementing counter in case of the DTx
+            %%%%%reserving the channel
+            
             if (st~=151)
-                % Increment count of #iterations with no CTS
-                cai = (cai+uint16(1)); cni = (cni+uint16(1));
-                % If no CTS received within TOA iterations, resend this RTS frame
-                if (cni>=toa)
-                    % Reset no-ACK count
-                    cni = uint16(0);
-                    if (vm), fprintf(1,'@%5.2f: Timeout, No CTS Received in %d iterations, Retransmitting RTS...\n\n',toc,toa); end
-                    retransmit_counter=retransmit_counter+1;
-                    st = uint8(111); %prm.DTxStateEnergyDetDIFS
-                    % Set flag to retransmit RTS again
-                    frt = logical(true);
-                end
+            % Increment count of #iterations with no ACK
+            cai = (cai+uint16(1)); cni = (cni+uint16(1));
+            % If no ACK received within TOA iterations, resend this DATA frame
+            if (cni>=toa)
+                % Reset no-ACK count
+                cni = uint16(0);
+                if (vm), fprintf(1,'@%5.2f: Timeout, No CTS Received in %d iterations, Retransmitting RTS #%d...\n\n',toc,toa,c8f); end
+                retransmit_counter=retransmit_counter+1;
+                st = uint8(111); %prm.DTxStateEnergyDetDIFS
+                % Set flag to retransmit RTS again
+                frt = logical(true);
+            end
             end
         end
         
@@ -103,12 +129,12 @@ while ~fe
         if (cai>=to)
             if (vm), fprintf(1,'@%5.2f: Timeout, No CTS Received in %d iterations, Continue transmit RTS...\n',toc,to); end
             retransmit_counter=retransmit_counter-1;
-%             if packet_number == numPackets
-%                 % Change DTx State to Terminal State: no more Tx/Rx performed
-%                 st = uint8(140); %prm.DTxStateEOT
-%                 % Set exit flag
-%                 fe  = logical(true(1));
-%             else
+            if packet_number == numPackets
+                % Change DTx State to Terminal State: no more Tx/Rx performed
+                st = uint8(140); %prm.DTxStateEOT
+                % Set exit flag
+                fe  = logical(true(1));
+            else
                 %set state
                 st  = uint8(111); %prm.DTxStateEnergyDetDIFS
                 %set retransmit flag to false
@@ -116,18 +142,14 @@ while ~fe
                 %resets counters
                 cai = uint16(0); cni = uint16(0);
                 % Increment count of #802.11B frames
-                % c8f = c8f + uint8(1);
-%             end
+%%%%%!!!!!*****                c8f = c8f + uint8(1);
+            end
         end % END IF CTI>TO
         
-    elseif (smt==uint8(12)) %prm.DTxStateTransmitDATA
-        %         %Introducing delay to check for the Time Synch Problem
-        %         rep=2;
-        %         for m=1:rep
-        %             lol = trx(db,ft,txGain,rxGain,centerFreqTx,centerFreqRx,intFactor,decFactor,1);
-        %         end
-        %         clear rep;
         
+        
+        % st = uint8(121); %prm.DTxStateTransmitHeader (to work without the MAC layer)
+    elseif (smt==uint8(12)) %prm.DTxStateTransmitDATA
         [d2s,f8t,fit] = dtx_2TransmitDATA(frt,ft);
         trx(d2s,ft,txGain,rxGain,centerFreqTx,centerFreqRx,intFactor,decFactor,swapFreqFlag);
         frt = logical(false(1));
@@ -169,7 +191,7 @@ while ~fe
                 retransmit_counter=retransmit_counter+1;
                 st = uint8(111); %prm.DTxStateEnergyDetDIFS
                 % Set flag to retransmit DATA
-                frt = logical(true(1));
+                frt = logical(true);
             end
         end
     end % END IF DS
@@ -200,6 +222,7 @@ ft = logical(true(1));
 trx(db,ft,txGain,rxGain,centerFreqTx,centerFreqRx,intFactor,decFactor,swapFreqFlag);
 dtx_2TransmitRTS(frt,ft);
 dtx_3ReceiveCTS(df,ft,st);
+
 dtx_2TransmitDATA(frt,ft);
 dtx_3ReceiveACK(df,ft,st);
 clear('ddd','dtx_2TransmitDATA','dtx_3ReceiveACK','dtx_2TransmitRTS','dtx_3ReceiveCTS','preambleDet','rffe','sms');
@@ -217,9 +240,9 @@ function [d2s,f8t,fit] = dtx_2TransmitDATA(frt,ft)
 % ft:  Flag Terminal: If true, specifies to release System objects
 
 % Setting global variables
-global usrpFrameLength numBits80211b halfSuperSamples80211b halfUsrpFrameLength numPayloadBits dataChoice l ...
+global usrpFrameLength numBits80211b halfSuperSamples80211b halfUsrpFrameLength numPayloadBits choice l ...
     numSuperFrameBits numMacHdrBits numSuperBits numFcsBits numPhyHdrBits ...
-    spreadFactor packets_sent packet_array packet_number aip numPackets
+    spreadFactor packets_sent packet_array packet_number aip
 
 %determine addressTx for RA in ACK frame
 addressTxStr = num2str(aip);
@@ -262,7 +285,6 @@ persistent n8s;
 % nuf: Number of USRP Frames for this 802.11b Frame (def 256)
 persistent nuf;
 
-
 % Initialize Persistent Data: Only on first call to dtx_2TransmitDATA
 if isempty(c8f),    c8f = uint32(0);        end
 if isempty(c8s),    c8s = uint32(0);        end
@@ -273,7 +295,7 @@ if isempty(d8s),    d8s = complex(zeros(halfSuperSamples80211b,1));  end
 if isempty(dib) || isempty(nib)
     
     % Load data
-    [dib, nib] = getData(dataChoice, l, aip);
+    [dib, nib] = getData(choice, l);
     
 end
 if isempty(hcg)
@@ -320,7 +342,6 @@ if (ft)
     % Clear persistent data within SMS() function
     % clear('sms'); % Not supported for code generation
 else
-    %     pause(0.1*(0.7));
     % ONLY ON 1ST USRP FRAME IN THIS 802.11B FRAME, prepare PPDU samples
     if (cuf == uint32(0))
         if (frt)
@@ -334,9 +355,7 @@ else
             c8f = (c8f + 1);
             %for experimental counting
             packets_sent = packets_sent+1;
-            if packet_number < numPackets
             packet_number = packet_number+1;
-            end
             packet_array(1,packet_number) = packet_array(1,packet_number) + 1;
         end
         % ONLY ON LAST 802.11B FRAME, recalculate NXX persistent variables
@@ -442,7 +461,8 @@ function [faf,dfl,flg,nrb,rbs,st] = dtx_3ReceiveACK(df,ft,st)
 
 % Setting global variables
 global halfUsrpFrameLength numUsrpBits doubleUsrpFrameLength ...
-    numMpduBits numMacHdrBits numSuperBits aip syncnum vm
+    numMpduBits numMacHdrBits numFcsBits numSuperBits numSuperFrameBits aip ...
+    syncnum retransmit_counter vm
 
 % Persistent Data: Maintained between function calls to drx_1ReceiveData
 % chf: Header Frame Count: Counts #USRP frames that have header info (0-2)
@@ -611,7 +631,7 @@ else
                 % Process frame control in MAC Header
                 if isequal(dfb(i1b:(i1b+15),1),[0;0;0;1;1;1;0;1;1;1;1;1;1;1;1;1])
                     if (vm),
-                        fprintf(1,'ACK''s Frame-Control Readout:');
+                        fprintf(1,'ACK''s Frame-Control Readout:');%%%%************Checking frame control at DRx
                         fprintf(1,'%d',dfb(i1b:(i1b+15),1));
                         fprintf(1,'\n');
                     end
@@ -667,6 +687,34 @@ else
                     rb(1:doubleUsrpFrameLength) = complex(zeros(doubleUsrpFrameLength,1));
                 end
             end % END IF CH==#
+            
+            %         elseif (st==uint8(213)) %prm.DRxStateRxGetPayload
+            %
+            %             % Update Payload Frame Count
+            %             cpf = cpf+uint8(1);
+            %             if (cpf<npf) %prm.NumPayloadFrames
+            %                 % Store All Payload Bits in rbs and update bit count nrb
+            %                 nrb = uint16(numUsrpBits);
+            %                 rbs(1:numUsrpBits) = dfb(i1b:(i1b+numUsrpBits-1));
+            %             else  % On last payload frame for this 802.11b frame,
+            %                 % Calculate #bits to return from remainder after division
+            %                 % of #MPDU bits by 64 bits/USRPframe
+            %                 nrb = uint16(rem(nmb,uint16(numUsrpBits)));
+            %                 if (nrb==uint16(0)), nrb=uint16(numUsrpBits); end
+            %                 % Pass back all bits, even FCS used to verify no error
+            %                 rbs(uint8(1):uint8(nrb)) = dfb(i1b:(i1b+uint8(nrb)-uint8(1)));
+            %                 % Set flag #5 true to signify all payload data recovered
+            %                 flg(1,5) = logical(true(1));
+            %                 % Pass back total #payload frames in flagged data, dfl
+            %                 dfl = uint16(npf);
+            %                 % Change Major State from Rx DATA to Tx ACK
+            %                 st = uint8(220); %prm.DRxStateTxACKSendACK
+            %                 % Reset all count variables internal to function
+            %                 chf = uint8(0);
+            %                 cpf = uint8(0);
+            %                 rb(1:doubleUsrpFrameLength) = complex(zeros(doubleUsrpFrameLength,1));
+            %             end
+            
         end % END IF SR==#
         % Store bits from this frame for use in next frame's processing
         dld(1:numUsrpBits) = dfd(1:numUsrpBits);
@@ -684,9 +732,9 @@ function [d2s,f8t,fit] = dtx_2TransmitRTS(frt,ft)
 % ft:  Flag Terminal: If true, specifies to release System objects
 
 % Setting global variables
-global usrpFrameLength numBits80211b halfSuperSamples80211b halfUsrpFrameLength numPayloadBits dataChoice l ...
+global usrpFrameLength numBits80211b halfSuperSamples80211b halfUsrpFrameLength numPayloadBits choice l ...
     numSuperFrameBits numMacHdrBits numSuperBits numFcsBits numPhyHdrBits ...
-    spreadFactor packets_sent packet_array packet_number aip
+    spreadFactor packets_sent packet_array packet_number aip 
 
 %determine addressTx for RA in ACK frame
 addressTxStr = num2str(aip);
@@ -695,8 +743,12 @@ addressTx2 = str2double(addressTxStr(3));
 
 % Persistent Data: Maintained between function calls to drx_1ReceiveData
 
+%%%%%!!!!!***** Creating a parallel variable vcs8f inplace of c8f
+% vcs8f: 802.11b Frame Count: Counts #802.11b RTS/CTS packets transmitted
+%persistent vcs8f;
+
 % % c8f: 802.11b Frame Count: Counts #802.11b Frames transmitted
-persistent c8f;
+ persistent c8f;
 % c8s: 802.11b Frame Sample Count: Counts #802.11b Frame samples transmitted
 persistent c8s;
 % cib: Image Bit Count: Counts #Image Data Bits transmitted
@@ -730,8 +782,6 @@ persistent n8s;
 % nuf: Number of USRP Frames for this 802.11b Frame (def 256)
 persistent nuf;
 
-% numSuperFrameBits
-
 % Initialize Persistent Data: Only on first call to dtx_2TransmitDATA
 if isempty(c8f),    c8f = uint32(0);        end
 if isempty(c8s),    c8s = uint32(0);        end
@@ -742,7 +792,7 @@ if isempty(d8s),    d8s = complex(zeros(halfSuperSamples80211b,1));  end
 if isempty(dib) || isempty(nib)
     
     % Load data
-    [dib, nib] = getData(dataChoice, l);
+    [dib, nib] = getData(choice, l);
     
 end
 if isempty(hcg)
@@ -791,7 +841,31 @@ if (ft)
 else
     % ONLY ON 1ST USRP FRAME IN THIS 802.11B FRAME, prepare PPDU samples
     if (cuf == uint32(0))
-        % ONLY ON LAST 802.11B FRAME, recalculate NXX persistent variables
+
+        
+        
+%%%%%!!!!!***** Temporary commenting 14 lines below to solve reduced data Tx        
+        
+        
+%         if (frt)
+%             % If retransmit flag set, decrease count of image bits sent
+%             cib = (cib - nbb);
+%             %for experimental counting
+%             packets_sent = packets_sent+1;
+%             packet_array(1,packet_number) = packet_array(1,packet_number) + 1;
+%         else
+%             % Otherwise, update 802.11b Frame Count
+%             c8f = (c8f + 1);
+%             %for experimental counting
+%             packets_sent = packets_sent+1;
+%             packet_number = packet_number+1;
+%             packet_array(1,packet_number) = packet_array(1,packet_number) + 1;
+%         end
+        
+
+
+
+% ONLY ON LAST 802.11B FRAME, recalculate NXX persistent variables
         if (c8f == n8f)
             % Recalculate MSDU/MAC frame body length from #remaining bits to send
             nbb = min((nib-cib), uint32(numPayloadBits));
@@ -815,8 +889,8 @@ else
         d8b(161:176) = de2bi(double(nmb), 16)';
         % Append 16-bit CRC to 32-bit PLCP Header: result is 48 bits
         d8b(145:192) = step(hcg, d8b(145:176));
-        % Send MAC Header for RTS frame
-        % RTS Frame Control (16 bits): Ver 00, Type 01, Subtype 1011
+        % Send MAC Header for DATA frame
+        % DATA Frame Control (16 bits): Ver 00, Type 10, Subtype 0000
         ProtocolVer = [0;0];
         TypeBits = [0;1];
         SubType = [1;0;1;1];
@@ -831,19 +905,38 @@ else
         OrderBit = [0];
         d8b(193:208) = [ProtocolVer;TypeBits;SubType;ToDS;FromDS;MoreFlag;...
             RetryBit;PwrMgmt;MoreData;WepBit;OrderBit];
-        % RTS Frame Duration/ID Slot (16 bits) holds Frame number in sequence
+        % DATA Frame Duration/ID Slot (16 bits) holds Frame number in sequence
         d8b(209:224) = de2bi(double(c8f), 16)';
-        % RTS Frame Address 1 is RA
+        % DATA Frame Address 1 is RA
         d8b(225:272) = [de2bi(0,32),de2bi(20,8),de2bi(2,8)]';
-        % RTS Frame Address 2 is TA
+        % DATA Frame Address 2 is TA
         d8b(273:320) = [de2bi(0,32),de2bi(addressTx1,8),de2bi(addressTx2,8)]';
+
         
-        % Append 32-bit FCS to MAC Header(64)+MSDU(numPayloadBits): res 16,192 bits
-        d8b(193:352) = step(hfg, d8b(193:320));
+       %%%%%!!!!!***** Temporary change to modify RTS according to standard
+               
+                % Address 3
+        d8b(321:368) = zeros(48,1);
+        % Sequence Control
+        d8b(369:384) = zeros(16,1);
+        % Address 4
+        d8b(385:432) = zeros(48,1);
+        % DATA MSDU / MAC Frame Body: n8b bits
+%         d8b(433:(432+nbb)) = dib(cib+1:cib+nbb);
+
+
+%         % Append 32-bit FCS to MAC Header(64)+MSDU(numPayloadBits): res 16,192 bits
+%         d8b(193:352+nbb) = step(hfg, d8b(193:(320+nbb)));
+     
+
+% Append 32-bit FCS to MAC Header(64)+MSDU(numPayloadBits): res 16,192 bits
+        d8b(193:464) = step(hfg, d8b(193:432));
         
-        % Append 32 zeros to 80211b frame, to satisfy USRP frame 'multiples of 64bit' requirement
-        d8b(353:384) = zeros(2*numSuperBits,1);
-        
+% % Append 32 zeros to 80211b frame, to satisfy USRP frame 'multiples of 64bit' requirement
+%          d8b(353+nbb:384+nbb) = zeros(2*numSuperBits,1);
+
+d8b(465:512) = zeros(3*numSuperBits,1);
+
         % Scramble, Modulate, and Spread this 802.11b Frame
         dfi(1:n8b) = d8b(1:n8b);
         dfo = sms(dfi,ft,n8b);
@@ -871,17 +964,17 @@ end % End Function DTX_2TRANSMITRTS
 
 
 function [faf,dfl,flg,nrb,rbs,st] = dtx_3ReceiveCTS(df,ft,st)
-% DRX_1RECEIVERTS: Gets 802.11b DATA frame in 256 consecutive USRP frames
+% DRX_1RECEIVEDATA: Gets 802.11b DATA frame in 256 consecutive USRP frames
 % Function Arguments:
-% df:  This RTS Frame, Raw USRP frame data in usrpFrameLength samples
-% dfl: RTS Flagged: uint16 to accompany data, set when status flag is true
+% df:  This Data Frame, Raw USRP frame data in usrpFrameLength samples
+% dfl: Data Flagged: uint16 to accompany data, set when status flag is true
 % flg: Status Flags: a 1x5 logical array, carrying the following flags:
 % (1): fdf: Flag Detected Preamble: Set true if PLCP Preamble (SYNC) found
 % (2): fph: Flag PLCP Header Found: Init false, set true if PHY Header rx'd
 % (3): fec: Flag Error CRC: Init false, set true if PHY Header CRC in error
 % (4): fmh: Flag MAC Header Found: Init false, set true if MAC Header rx'd
 % (5): fpf: Flag All Payload Found: Init false, set true if all payload rxd
-% (6): ffc: Flag Frame Control: Set true if FrameCtrl~=RTS (e.g. if CTS)
+% (6): ffc: Flag Frame Control: Set true if FrameCtrl~=DATA (e.g. if ACK)
 % ft:  Flag Terminal: If true, specifies to release System objects
 % nrb: Number of Recovered (MAC) Bits: Zero if not returning any MAC bits
 % rbs: Recovered Binary Sequence: Taken from MAC Hdr/Payload/FCS (64 bits)
@@ -892,7 +985,7 @@ global halfUsrpFrameLength numUsrpBits doubleUsrpFrameLength ...
     numMpduBits numMacHdrBits numFcsBits numSuperBits numSuperFrameBits aip ...
     syncnum retransmit_counter vm vcsFlag vcs_Slots
 
-% Persistent Data: Maintained between function calls to drx_1ReceiveRTS
+% Persistent Data: Maintained between function calls to drx_1ReceiveData
 % chf: Header Frame Count: Counts #USRP frames that have header info (0-2)
 persistent chf;
 % cp:  Payload Frame Count: Counts #USRP frames w/only payload data (0-251)
@@ -940,7 +1033,7 @@ if isempty(i1s),    i1s = uint16(1);                end
 if isempty(nmb),    nmb = uint16(numMpduBits+numSuperBits);      end
 if isempty(npf),    npf = uint8(ceil((nmb-numUsrpBits)/numUsrpBits));               end
 if isempty(rb),     rb  = complex(zeros(doubleUsrpFrameLength,1));   end
-% Local Function Data: Overwritten on every call to drx_1ReceiveRTS
+% Local Function Data: Overwritten on every call to drx_1ReceiveData
 cra = zeros(41,1);
 crm = zeros(2,2);
 % dfb: This Frame + Last Frame Bits
@@ -1061,7 +1154,7 @@ else
                 % Process frame control in MAC Header
                 if isequal(dfb(i1b:(i1b+15),1),[0;0;0;1;1;1;0;0;1;1;1;1;1;1;1;1])
                     if (vm),
-                        fprintf(1,'CTS''s Frame-Control Readout:');
+                        fprintf(1,'CTS''s Frame-Control Readout:');%%%%************Checking frame control at DRx
                         fprintf(1,'%d',dfb(i1b:(i1b+15),1));
                         fprintf(1,'\n');
                     end
@@ -1075,14 +1168,18 @@ else
                     % Pass back Sequence Number in Flagged Data, dfl
                     dfl = uint16(n8f);
                     
-                    vcs_Slots = n8f;
+                    %%%%%!!!!!***** n8f stores duration field value of CTS
+                    %%%%% Now we convert this to decimal to pass as
+                    %%%%% vcs_Slots
                     
+                    vcs_Slots = n8f;
+                                                           
                     %                     faf=logical(true(1));
                     %                     chf = uint8(0);
                     %                     st  = uint8(111); %prm.DRxStateRxGetPayload
                     
                 else
-                    % Set flag #6: ffc true when MAC Frame Control ~RTS
+                    % Set flag #6: ffc true when MAC Frame Control ~DATA
                     flg(1,6) = logical(true(1));
                     % Send back the Frame Control Received in dfl
                     dfl = uint16(bi2de(dfb(i1b:(i1b+15),1).'));
@@ -1109,28 +1206,63 @@ else
                     st  = uint8(121); %!!!!prm.DRxStateRxGetPayload
                     vcsFlag=logical(false(1));
                 else
-                    %                     if (vm), fprintf('Wrong MAC Address, Resetting to Detect Preamble..\n'); end
+%                     if (vm), fprintf('Wrong MAC Address, Resetting to Detect Preamble..\n'); end
+
+%%%%%!!!!!***** IP didnt match Now Pausing the unwanted DTx for vcs_Slots 
                     if (vm), fprintf('CTS IP unmatched - Defering Medium Access for NAV Duration\n'); end
                     vcsFlag=logical(true(1));
+                    %%%%%!!!!!***** We call the MAC layer right here to
+                    %%%%%pause
                     frt = logical(true);
                     st = uint8(111); %prm.DTxStateEnergyDetDIFS
                     st = dtxMACLayerSlot(st,frt);
                     
+                    %%%%%%!!!!!***** putting condition to not increment the
+                    %%%%%%CW
+                
                     if (st~=151)
-                        
-                        % Set flag #6: ffc true when MAC Frame Control ~RTS
-                        flg(1,6) = logical(true(1));
-                        % Send back the Frame Control Received in dfl
-                        % Return to Search for Preamble
-                        st  = uint8(111); %prm.DRxStateRxSearchPreamble
-                        
-                        % Reset all count variables internal to function
-                        chf = uint8(0);
-                        cpf = uint8(0);
-                        rb(1:doubleUsrpFrameLength) = complex(zeros(doubleUsrpFrameLength,1));
+                    
+                    % Set flag #6: ffc true when MAC Frame Control ~DATA
+                    flg(1,6) = logical(true(1));
+                    % Send back the Frame Control Received in dfl
+                    % Return to Search for Preamble
+                    st  = uint8(111); %prm.DRxStateRxSearchPreamble
+                    
+                    % Reset all count variables internal to function
+                    chf = uint8(0);
+                    cpf = uint8(0);
+                    rb(1:doubleUsrpFrameLength) = complex(zeros(doubleUsrpFrameLength,1));
                     end
-                end
+                end 
             end % END IF CH==#
+            
+            %         elseif (st==uint8(213)) %prm.DRxStateRxGetPayload
+            %
+            %             % Update Payload Frame Count
+            %             cpf = cpf+uint8(1);
+            %             if (cpf<npf) %prm.NumPayloadFrames
+            %                 % Store All Payload Bits in rbs and update bit count nrb
+            %                 nrb = uint16(numUsrpBits);
+            %                 rbs(1:numUsrpBits) = dfb(i1b:(i1b+numUsrpBits-1));
+            %             else  % On last payload frame for this 802.11b frame,
+            %                 % Calculate #bits to return from remainder after division
+            %                 % of #MPDU bits by 64 bits/USRPframe
+            %                 nrb = uint16(rem(nmb,uint16(numUsrpBits)));
+            %                 if (nrb==uint16(0)), nrb=uint16(numUsrpBits); end
+            %                 % Pass back all bits, even FCS used to verify no error
+            %                 rbs(uint8(1):uint8(nrb)) = dfb(i1b:(i1b+uint8(nrb)-uint8(1)));
+            %                 % Set flag #5 true to signify all payload data recovered
+            %                 flg(1,5) = logical(true(1));
+            %                 % Pass back total #payload frames in flagged data, dfl
+            %                 dfl = uint16(npf);
+            %                 % Change Major State from Rx DATA to Tx ACK
+            %                 st = uint8(220); %prm.DRxStateTxACKSendACK
+            %                 % Reset all count variables internal to function
+            %                 chf = uint8(0);
+            %                 cpf = uint8(0);
+            %                 rb(1:doubleUsrpFrameLength) = complex(zeros(doubleUsrpFrameLength,1));
+            %             end
+            
         end % END IF SR==#
         % Store bits from this frame for use in next frame's processing
         dld(1:numUsrpBits) = dfd(1:numUsrpBits);

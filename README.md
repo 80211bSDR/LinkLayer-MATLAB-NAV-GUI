@@ -1,6 +1,6 @@
-LinkLayer-MATLAB-NAV-GUI
+LinkLayer-MATLAB
 ========================================================
-LinkLayer-MATLAB-NAV-GUI is a IEEE 802.11b Standard Compliant Link Layer (PHY and MAC layer) for MATLAB-based SDR. The code is highly modular and is entirely written in MATLAB. See each file for further documentation. The default settings in the files work well with our N210s using WBX daughterboards.
+LinkLayer-MATLAB is a IEEE 802.11b Standard Compliant Link Layer (PHY and MAC layer) for MATLAB-based SDR. The code is highly modular and is entirely written in MATLAB. See each file for further documentation. The default settings in the files work well with our N210s using WBX daughterboards.
 
 We model our system using a finite state machine (FSM) that transitions only on the clock cycles derived from the USRP clock, allowing for slot-time synchronized operations, thereby eliminating the need for external clocks. Futhermore, the model helps create a state-action based system design, wherein the same node switches between transmitter and receiver functions.
 
@@ -162,5 +162,5 @@ At the DRx,
 ```
 
 ### Running the Two Node (1 DTx and 1 DRx) OR the Three Node (2 DTxs and 1 DRx) System with GUI
-Run `GUIMain.m` script in MATLAB to invoke an interactive Graphical User Interface (GUI). The GUI helps the user set the required parameters as desired to conduct over-the-air experiments. Default settings for PHY/MAC parameters are given in bubble choices and in edit text boxes. Once the parameters are set, press the `START` button to run the experiments. Press `HELP` button for guidance with parameters selection and running the experiment. 
+The folder `GUI` contains the code `GUIMain`. Run the code `GUIMain` in MATLAB. An interactive GUI (Graphical User Interface) will appear ON screen. Now select the values for the required parameters as desired to conduct the experiment. Major selections are given in bubble choices and other selections in Edit Text boxes. After selecting the values for the parameters press the `START` button to run the experiment. Press `HELP` button for guidance with parameters selection and running the experiment. 
 

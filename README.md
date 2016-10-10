@@ -2,6 +2,8 @@ LinkLayer-MATLAB-NAV-GUI
 ========================================================
 LinkLayer-MATLAB-NAV-GUI is a IEEE 802.11b Standard Compliant Link Layer (PHY and MAC layer) for MATLAB-based SDR. The code is highly modular and is entirely written in MATLAB. See each file for further documentation. The default settings in the files work well with our N210s using WBX daughterboards.
 
+<img src="thumbnail-1.jpg" width="800">
+
 The system is modeled using a finite state machine (FSM) that transitions only on the clock cycles derived from the USRP clock, allowing for slot-time synchronized operations, thereby eliminating the need for external clocks. Futhermore, the model helps create a state-action based system design, wherein the same node switches between transmitter and receiver functions.
 
 The IEEE 802.11b PHY and MAC layer packet structure specifications is adopted in our implementation. Our approach collects all the bits in the packet in multiples of 8 octets, which forms one USRP frame. This makes it easy for us to work with the MATLAB system objects and with PHY and MAC header fields in the RTS/CTS/DATA/ACK packet that happen to have sizes that are multiples of 8 octets. Multiple USRP frames will compose the standard-compliant 802.11b packet.
@@ -20,8 +22,6 @@ This code is licensed under the LGPLv3 license. Please feel free to use the code
 
 **Publication for citation:**<br>
 Ramanathan Subramanian, Benjamin Drozdenko, Eric Doyle, Rameez Ahmed, Miriam Leeser, and Kaushik Chowdhury, "*High-Level System Design of IEEE 802.11b Standard-Compliant Link Layer for MATLAB-based SDR*", accepted on March 3rd, 2016 for publication in IEEE Access Journal.
-
-<img src="thumbnail-1.jpg" width="800">
 
 ## Hardware Setup
 <img src="hwsetup.jpg" width="600">

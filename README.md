@@ -2,11 +2,13 @@ LinkLayer-MATLAB-NAV-GUI
 ========================================================
 LinkLayer-MATLAB-NAV-GUI is a IEEE 802.11b Standard Compliant Link Layer (PHY and MAC layer) for MATLAB-based SDR. The code is highly modular and is entirely written in MATLAB. See each file for further documentation. The default settings in the files work well with our N210s using WBX daughterboards.
 
-We model our system using a finite state machine (FSM) that transitions only on the clock cycles derived from the USRP clock, allowing for slot-time synchronized operations, thereby eliminating the need for external clocks. Futhermore, the model helps create a state-action based system design, wherein the same node switches between transmitter and receiver functions.
+The system is modeled using a finite state machine (FSM) that transitions only on the clock cycles derived from the USRP clock, allowing for slot-time synchronized operations, thereby eliminating the need for external clocks. Futhermore, the model helps create a state-action based system design, wherein the same node switches between transmitter and receiver functions.
 
-We adopt the IEEE 802.11b PHY and MAC layer packet structure specifications in our implementation. Our approach collects all the bits in the packet in multiples of 8 octets, which forms one USRP frame. This makes it easy for us to work with the MATLAB system objects and with PHY and MAC header fields in the DATA/ACK packet that happen to have sizes that are multiples of 8 octets. Multiple USRP frames will compose the standard-compliant 802.11b packet.
+The IEEE 802.11b PHY and MAC layer packet structure specifications is adopted in our implementation. Our approach collects all the bits in the packet in multiples of 8 octets, which forms one USRP frame. This makes it easy for us to work with the MATLAB system objects and with PHY and MAC header fields in the RTS/CTS/DATA/ACK packet that happen to have sizes that are multiples of 8 octets. Multiple USRP frames will compose the standard-compliant 802.11b packet.
 
-We implement **DBPSK** (differential binary phase shift keying) and **DSSS** direct sequence spread spectrum at the PHY layer and **CSMA/CA** (carrier sense multiple access with collision avoidance) at the MAC layer.
+**DBPSK** (differential binary phase shift keying) and **DSSS** direct sequence spread spectrum at the PHY layer and **CSMA/CA** (carrier sense multiple access with collision avoidance) at the MAC layer is implemented.
+
+802.11 relies mainly on physical carrier sensing and is known to suffer from the hidden node problem. We have implemented the **virtual carrier sensing** in CSMA/CA using the optional **IEEE 802.11 RTS/CTS exchange**. RTS/CTS is known to partially solve the hidden node problem in wireless networks. The *duration* field in the MAC header specifies basically the time the medium will be busy. The nodes will read into the *duration* field and set their *Network Allocation Vector (NAV)* counter, which is essentially indicates how long it must defer medium access.
 
 The consistent performance of the two node (1 DTx and 1 DRx; essentially a bi-directional link) and the three node (2 DTxs and 1 DRx) experimental results demonstrate the robustness of the system in mitigating packet collisions and enforcing fairness among nodes when accessing a common channel.
 
@@ -162,5 +164,5 @@ At the DRx,
 ```
 
 ### Running the Two Node (1 DTx and 1 DRx) OR the Three Node (2 DTxs and 1 DRx) System with GUI
-The folder `GUI` contains the code `GUIMain`. Run the code `GUIMain` in MATLAB. An interactive GUI (Graphical User Interface) will appear ON screen. Now select the values for the required parameters as desired to conduct the experiment. Major selections are given in bubble choices and other selections in Edit Text boxes. After selecting the values for the parameters press the `START` button to run the experiment. Press `HELP` button for guidance with parameters selection and running the experiment. 
+Run the code `GUIMain.m` in MATLAB to invoke an interactive GUI (Graphical User Interface). Set the required PHY/MAC parameters as desired to conduct the over-the-air experiments. Default parameter settings are given in bubble choices and in edit text boxes. Once the parameters are set, press the `START` button to run the experiment. Press `HELP` button to open up a help document that guides in parameter selection and in running the experiments. 
 

@@ -21,7 +21,11 @@ This work is supported by **MathWorks under the Development-Collaboration Resear
 This code is licensed under the LGPLv3 license. Please feel free to use the code in your research and development works. We would appreciate a citation to the paper below when this code is helpful in obtaining results in your future publications. 
 
 **Publication for citation:**<br>
-Ramanathan Subramanian, Benjamin Drozdenko, Eric Doyle, Rameez Ahmed, Miriam Leeser, and Kaushik Chowdhury, "*High-Level System Design of IEEE 802.11b Standard-Compliant Link Layer for MATLAB-based SDR*", accepted on March 3rd, 2016 for publication in IEEE Access Journal.
+R. Subramanian, B. Drozdenko, E. Doyle, R. Ahmed, M. Leeser and K. R. Chowdhury, "High-Level System Design of IEEE 802.11b Standard-Compliant Link Layer for MATLAB-Based SDR," in IEEE Access, vol. 4, no. , pp. 1494-1509, 2016. 
+doi: 10.1109/ACCESS.2016.2553671
+
+R. Subramanian, E. Doyle, B. Drozdenko, M. Leeser and K. R. Chowdhury, "State-Action Based Link Layer Design for IEEE 802.11b Compliant MATLAB-Based SDR," 2016 International Conference on Distributed Computing in Sensor Systems (DCOSS), Washington, DC, USA, 2016, pp. 193-198. 
+doi: 10.1109/DCOSS.2016.34
 
 ## Hardware Setup
 <img src="hwsetup.jpg" width="600">

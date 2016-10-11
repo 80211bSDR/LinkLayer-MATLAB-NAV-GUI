@@ -27,6 +27,8 @@ doi: 10.1109/ACCESS.2016.2553671
 R. Subramanian, E. Doyle, B. Drozdenko, M. Leeser and K. R. Chowdhury, "State-Action Based Link Layer Design for IEEE 802.11b Compliant MATLAB-Based SDR," 2016 International Conference on Distributed Computing in Sensor Systems (DCOSS), Washington, DC, USA, 2016, pp. 193-198. 
 doi: 10.1109/DCOSS.2016.34
 
+<a href="https://youtu.be/hE3nQmGtW1E" target="_blank"><img src="thumbnail.jpg" width="600" height="340" border="10"/></a>
+
 ## Hardware Setup
 <img src="hwsetup.jpg" width="600">
 

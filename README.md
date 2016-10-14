@@ -4,17 +4,17 @@ LinkLayer-MATLAB-NAV-GUI is an IEEE 802.11b Standard Compliant Link Layer (PHY a
 
 <img src="thumbnail-1.jpg" width="800">
 
-The system is modeled using a finite state machine (FSM) that transitions only on the clock cycles derived from the USRP clock, allowing for slot-time synchronized operations, thereby eliminating the need for external clocks. Futhermore, the model helps create a state-action based system design, wherein the same node switches between transmitter and receiver functions.
+The system is modeled using a finite state machine (FSM) that transitions only on the clock cycles derived from the USRP clock, allowing for slot-time synchronized operations, thereby eliminating the need for external clocks. Furthermore, the model helps create a state-action based system design, wherein the same node switches between transmitter and receiver functions.
 
 The IEEE 802.11b PHY and MAC layer packet structure specifications is adopted in our implementation. Our approach collects all the bits in the packet in multiples of 8 octets, which forms one USRP frame. This makes it easy for us to work with the MATLAB system objects and with PHY and MAC header fields in the RTS/CTS/DATA/ACK packet that happen to have sizes that are multiples of 8 octets. Multiple USRP frames will compose the standard-compliant 802.11b packet.
 
 **DBPSK** (differential binary phase shift keying) and **DSSS** direct sequence spread spectrum at the PHY layer and **CSMA/CA** (carrier sense multiple access with collision avoidance) at the MAC layer is implemented.
 
-802.11 relies mainly on physical carrier sensing and is known to suffer from the hidden node problem. We have implemented the **virtual carrier sensing** in CSMA/CA using the optional **IEEE 802.11 RTS/CTS exchange**. RTS/CTS is known to partially solve the hidden node problem in wireless networks. The *duration* field in the MAC header specifies basically the time the medium will be busy. The nodes will read into the *duration* field and set their *Network Allocation Vector (NAV)* counter, which is essentially indicates how long it must defer medium access.
+802.11 relies mainly on physical carrier sensing and is known to suffer from the hidden node problem. We have implemented the **virtual carrier sensing** in CSMA/CA using the optional **IEEE 802.11 RTS/CTS exchange**. RTS/CTS is known to partially solve the hidden node problem in wireless networks. The *duration* field in the MAC header specifies basically the time the medium will be busy. The nodes will read into the *duration* field and set their *Network Allocation Vector (NAV)* counter, which essentially indicates how long it must defer medium access.
 
-The consistent performance of the two node (1 DTx and 1 DRx; essentially a bi-directional link) and the three node (2 DTxs and 1 DRx) experimental results demonstrate the robustness of the system in mitigating packet collisions and enforcing fairness among nodes when accessing a common channel.
+The consistent performance of the two nodes (1 DTx and 1 DRx; essentially a bi-directional link) and the three nodes (2 DTxs and 1 DRx) experimental results demonstrate the robustness of the system in mitigating packet collisions and enforcing fairness among nodes when accessing a common channel.
 
-The current work provides a testbed to experiment with and enables creation of new MAC protocols starting from the fundamental IEEE 802.11b compliant standard.
+The current work provides a testbed to experiment with and enables the creation of new MAC protocols starting from the fundamental IEEE 802.11b compliant standard.
 
 This work is supported by **MathWorks under the Development-Collaboration Research Grant**. We would like to thank Mike McLernon and Ethem Sozer for their continued support on this project.
 

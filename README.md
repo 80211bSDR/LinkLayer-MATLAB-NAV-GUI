@@ -1,6 +1,6 @@
 LinkLayer-MATLAB-NAV-GUI
 ========================================================
-LinkLayer-MATLAB-NAV-GUI is a IEEE 802.11b Standard Compliant Link Layer (PHY and MAC layer) for MATLAB-based SDR. The code is highly modular and is entirely written in MATLAB. See each file for further documentation. The default settings in the files work well with our N210s using WBX daughterboards.
+LinkLayer-MATLAB-NAV-GUI is an IEEE 802.11b Standard Compliant Link Layer (PHY and MAC layer) for MATLAB-based SDR. The code is highly modular and is entirely written in MATLAB. See each file for further documentation. The default settings in the files work well with our N210s using WBX daughterboards.
 
 <img src="thumbnail-1.jpg" width="800">
 

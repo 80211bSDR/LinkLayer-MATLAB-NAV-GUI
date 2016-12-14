@@ -159,13 +159,15 @@ Start with generating the MEX-file for *transceive* function at DTx and the DRx.
 **Note**: `XXX` is the last three digits in the IP address of the corresponding USRP node. For e.g., the node set to IP address, say, **192.168.10.1** will have `XXX` equated to `101`. At the DTx, the `transceiveXXX()` includes a `swapFreqFlag`, set to **0** by default. By setting it to **1**, the center frequency of the transceiver's Tx and Rx operates in different channels. Essentially, the DTx *listens* for activity in the **same channel** it will soon *transmit* the DATA packet from, and switches to a **different channel** when it starts *receiving* the ACK. We recommend the different channels be separated by an amount greater than the bandwidth of the system, i.e. 1 MHz.<br>
 At the DTx,
 ```{eval=FALSE}
->> DTxInitParameters
+>> % the following initialization is only to generate the MEX file
+>> txGain = 20; rxGain = 15; centerFreqTx = 1.284e9;  centerFreqRx = 1.284e9; decFactor = 500; intFactor = 500;
 >> swapFreqFlag = 0; %same channel operation
 >> codegen transceiveXXX -args {complex(zeros(1408,1)),true,txGain,rxGain,centerFreqTx,centerFreqRx,decFactor, intFactor,swapFreqFlag}
 ```
 At the DRx,
 ```{eval=FALSE}
->> DRxInitParameters
+>> % the following initialization is only to generate the MEX file
+>> txGain = 15; rxGain = 20; centerFreqTx = 1.284e9; centerFreqRx = 1.284e9; decFactor = 500; intFactor = 500;
 >> codegen transceiveXXX -args {complex(zeros(1408,1)),true,txGain,rxGain,centerFreqTx,centerFreqRx,decFactor, intFactor}
 ```
 

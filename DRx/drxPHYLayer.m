@@ -41,7 +41,7 @@ ff  = logical(false(1)); %#ok<NASGU>
 % (5): fpf: Flag All Payload Found: Init false, set true if all payload rxd
 flg = logical(false(1,5)); %#ok<NASGU>
 % ft: Terminal Flag to release System objects
-ft  = logical(false(1));
+ft  = double(0);
 % hfd: Handle to MAC FCS Detector
 hfd = comm.CRCDetector('ChecksumsPerFrame',1,'FinalXOR',1, ...
     'InitialConditions',1,'Polynomial', ...
@@ -285,7 +285,7 @@ while (~fe)
     end
 end % End While ~EOTFLAG
 % Clear persistent data within all helper functions
-ft = logical(true(1));
+ft = double(1);
 trx(db,ft,txGain, rxGain, centerFreqTx, centerFreqRx, intFactor, decFactor);
 drx_1ReceiveRTS(df,ft,sr);    
 drx_2TransmitCTS(ft,nsq,sr);    
